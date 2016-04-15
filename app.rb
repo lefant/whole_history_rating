@@ -1,56 +1,53 @@
 require 'date'
+require 'json'
 require 'sinatra'
 require 'whole_history_rating'
-require 'yajl'
-
-@whr = WholeHistoryRating::Base.new(w2: 300)
-
-get '/' do
-  'Just Do It'
-end
-
-get '/example.json' do
-  content_type :json
-  { key1: 'value1', key2: 'value2' }.to_json
-end
 
 post '/games' do
   request.body.rewind
-  days = Yajl::Parser.parse(request.body.read) do |game|
-    puts 'game', game
-    puts 'game date', game['date']
-    puts Date.parse(game['date']).jd
-  end
-  min_day = days.min - 1
+  games = JSON.parse request.body.read
 
-  games.reverse_each do |game|
+  @whr = WholeHistoryRating::Base.new(w2: 300)
+
+  def create_game(min_day, game)
     day = Date.parse(game['date']).jd - min_day
+    puts 'day', day
     summary = game['summary']
+    puts 'summary', summary
     w = summary['winners_text']
     l = summary['loosers_text']
+    puts 'w/l', w, l
     # WholeHistoryRating::Base#create_game arguments:
     # black player name, white player name, winner, day number, handicap
     @whr.create_game(w, l, 'B', day, 0)
+  end
+
+  min_day = get_min_day(games)
+  games.reverse_each do |game|
+    create_game(min_day, game)
   end
 
   # Iterate the WHR algorithm towards convergence with more players/games,
   # more iterations are needed.
   @whr.iterate(100)
 
-  @whr.players.each do |p|
+  single_players = @whr.players.reject { |p| p.include? ',' }
+  puts 'single_players', single_players
+
+  ratings = single_players.flat_map do |p, k|
     rs = @whr.ratings_for_player(p)
-    if p.include? ','
-      puts 'skipping player including , ', p
-    else
-      if rs.count > 1
-        rs.each do |r|
-          # csv << ['player', 'day_number', 'elo_rating', 'uncertainty']
-          puts [p].concat(r)
-        end
-      end
+    rs.map do |r|
+      { player: p, day: r[0], elo: r[1], uncertainty: r[2] }
     end
   end
 
-  return_message = { status: :ok }
-  return_message.to_json
+  puts 'ratings', ratings
+  ratings.to_json
+end
+
+def get_min_day(games)
+  days = games.map do |game|
+    Date.parse(game['date']).jd
+  end
+  days.min - 1
 end
