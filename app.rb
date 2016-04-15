@@ -11,12 +11,9 @@ post '/games' do
 
   def create_game(min_day, game)
     day = Date.parse(game['date']).jd - min_day
-    puts 'day', day
     summary = game['summary']
-    puts 'summary', summary
     w = summary['winners_text']
     l = summary['loosers_text']
-    puts 'w/l', w, l
     # WholeHistoryRating::Base#create_game arguments:
     # black player name, white player name, winner, day number, handicap
     @whr.create_game(w, l, 'B', day, 0)
@@ -32,8 +29,6 @@ post '/games' do
   @whr.iterate(100)
 
   single_players = @whr.players.reject { |p| p.include? ',' }
-  puts 'single_players', single_players
-
   ratings = single_players.flat_map do |p, k|
     rs = @whr.ratings_for_player(p)
     rs.map do |r|
@@ -41,7 +36,6 @@ post '/games' do
     end
   end
 
-  puts 'ratings', ratings
   ratings.to_json
 end
 
