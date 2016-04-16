@@ -2,5 +2,8 @@
   "name": "whole-history-rating",
   "description": "a json api for the https://github.com/goshrine/whole_history_rating whr implementation",
   "image": "heroku/ruby",
-  "addons": []
+  "addons": [
+    "newrelic",
+    "papertrail"
+  ]
 }
