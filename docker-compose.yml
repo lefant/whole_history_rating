@@ -4,7 +4,6 @@ web:
   working_dir: /app/user
   environment:
     PORT: 8080
-    RUBYLIB: lib
   ports:
     - '8080:8080'
 shell:
@@ -13,7 +12,6 @@ shell:
   working_dir: /app/user
   environment:
     PORT: 8080
-    RUBYLIB: lib
   ports:
     - '8080:8080'
   volumes:
