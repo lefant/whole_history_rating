@@ -1,6 +1,6 @@
 web:
   build: .
-  command: 'bash -c ''bundle exec thin start -R config.ru -p $PORT'''
+  command: 'bash -c ''RUBYLIB=/app/user/lib bundle exec thin start -R config.ru -p $PORT'''
   working_dir: /app/user
   environment:
     PORT: 8080
