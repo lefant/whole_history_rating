@@ -3,6 +3,10 @@ require 'json'
 require 'sinatra'
 require 'whole_history_rating'
 
+get '/' do
+  'ok'
+end
+
 post '/games' do
   request.body.rewind
   games = JSON.parse request.body.read
